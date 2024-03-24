@@ -475,4 +475,6 @@ composer.lock
 *.scss.map
 
 # Custom
-storage/*.json
+storage
+
+dist/*

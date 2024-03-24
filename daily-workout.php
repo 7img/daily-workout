@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Daily Workout
  * Plugin URI:        https://wod-generator.com/wordpress-plugin/
- * Description:       Adds a Daily Workout widget and shortcode to your WordPress site, helping your users stay fit. Refreshes every day!
+ * Description:       Adds a Daily Workout widget and shortcode to your WordPress site, helping your users stay fit!
  * Version:           1.0.0
  * Requires at least: 5.2
  * Requires PHP:      8.1
@@ -23,32 +23,48 @@ require_once plugin_dir_path(__FILE__) . 'admin/settings.php';
 require_once plugin_dir_path(__FILE__) . 'inc/class-daily-workout-widget.php';
 require_once plugin_dir_path(__FILE__) . 'inc/shortcode-daily-workout.php';
 
+// Check if WP_Filesystem is already loaded
+if ( ! function_exists( 'WP_Filesystem' ) ) {
+    require_once ABSPATH . '/wp-admin/includes/file.php';
+}
+
+// Initialize the WP_Filesystem
+if ( ! WP_Filesystem() ) {
+    // Failed to initialize, handle the error
+    return;
+}
+
 /**
  * Activation Hook
  */
-function daily_workout_activate(): void {
-    if (! wp_next_scheduled('daily_workout_fetch_task')) {
+function daily_workout_activate(): void
+{
+    if (!wp_next_scheduled('daily_workout_fetch_task')) {
         wp_schedule_event(time(), 'hourly', 'daily_workout_fetch_task');
     }
 
     daily_workout_fetch_and_save_workout();
     update_option('daily_workout_option_show_link', 1);
 }
+
 register_activation_hook(__FILE__, 'daily_workout_activate');
 
 /**
  * Deactivation Hook
  */
-function daily_workout_deactivate(): void {
+function daily_workout_deactivate(): void
+{
     $timestamp = wp_next_scheduled('daily_workout_fetch_task');
     if ($timestamp) {
         wp_unschedule_event($timestamp, 'daily_workout_fetch_task');
     }
 }
+
 register_deactivation_hook(__FILE__, 'daily_workout_deactivate');
 
 
-function daily_workout_fetch_and_save_workout() {
+function daily_workout_fetch_and_save_workout()
+{
     $url = 'https://wod-generator.com/workout.json';
     $response = wp_remote_get($url);
 
@@ -81,12 +97,22 @@ function daily_workout_fetch_and_save_workout() {
         }
     }
 
-    // Save the new workout
-    if (!is_dir(dirname($storage_path))) {
-        mkdir(dirname($storage_path), 0755, true); // Ensure the storage directory exists
+    // Ensure the storage directory exists using wp_mkdir_p()
+    $directory_path = dirname($storage_path);
+
+    if (!is_dir($directory_path)) {
+        if (!wp_mkdir_p($directory_path)) {
+            error_log('Failed to create directory for saving workout: ' . $directory_path);
+            return;
+        }
     }
 
-    file_put_contents($storage_path, $workout);
+    // Use WP_Filesystem's method to write to the file
+    global $wp_filesystem;
+
+    if (!$wp_filesystem->put_contents($storage_path, $workout, FS_CHMOD_FILE)) {
+        error_log('Failed to write workout data to file: ' . $storage_path);
+    }
 }
 
 add_action('daily_workout_fetch_task', 'daily_workout_fetch_and_save_workout');

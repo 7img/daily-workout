@@ -12,24 +12,20 @@ function daily_workout_register_shortcode() {
 add_action('init', 'daily_workout_register_shortcode');
 
 function daily_workout_shortcode() {
-    $output = ''; // Initialize the output variable
+    $output = '';
 
-    // Path to the JSON file
     $json_file = plugin_dir_path(__DIR__) . 'storage/workout.json';
 
-    // Check if the workout JSON file exists
     if (file_exists($json_file)) {
-        // Get the JSON content
+        // Get the local JSON content
         $json_content = file_get_contents($json_file);
         $workout = json_decode($json_content, true);
 
         if ($workout) {
-            // Convert published date to a more readable format and to an attribute
             $date = new DateTime($workout['published_at']);
             $isoDate = $date->format(DateTime::ATOM); // For the datetime attribute
             $content = str_replace("\n", "<br>", $workout['content']);
 
-            // Start generating the output as an article
             $output .= '<article class="daily-workout" published="' . esc_attr($isoDate) . '">';
             $output .= '<header><h2>' . esc_html($workout['title']) . '</h2></header>';
             $output .= '<div>' . wp_kses_post($content) . '</div>';

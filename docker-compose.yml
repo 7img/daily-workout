@@ -1,0 +1,41 @@
+version: '3.1'
+
+services:
+
+  wordpress:
+    image: wordpress:latest
+    volumes:
+      - wordpress_data:/var/www/html
+      -  .:/var/www/html/wp-content/plugins/daily-workout
+    ports:
+      - "8000:80"
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_USER: pumpiron
+      WORDPRESS_DB_PASSWORD: moreplatesmoredates
+      WORDPRESS_DB_NAME: gymfails
+    restart: "unless-stopped"
+
+  db:
+    image: mariadb:latest
+    volumes:
+      - db_data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: strongestpassword
+      MYSQL_DATABASE: gymfails
+      MYSQL_USER: pumpiron
+      MYSQL_PASSWORD: moreplatesmoredates
+    restart: "unless-stopped"
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    environment:
+      PMA_HOST: db
+      MYSQL_ROOT_PASSWORD: strongestpassword
+    ports:
+      - "9090:80"
+    restart: "no"
+
+volumes:
+  wordpress_data:
+  db_data:

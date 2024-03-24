@@ -20,16 +20,16 @@ class Daily_Workout_Widget extends WP_Widget {
     }
 
     public function widget($args, $instance) {
-        echo $args['before_widget'];
+        echo esc_attr($args['before_widget']);
 
         // Check if title is set in the widget settings
         if (!empty($instance['title'])) {
-            echo $args['before_title'] . apply_filters('widget_title', $instance['title']) . $args['after_title'];
+            echo esc_attr($args['before_title']) . esc_attr(apply_filters('widget_title', $instance['title'])) . esc_attr($args['after_title']);
         }
 
         echo do_shortcode('[daily_workout]');
 
-        echo $args['after_widget'];
+        echo esc_attr($args['after_widget']);
     }
 
     public function form($instance) {
@@ -45,7 +45,7 @@ class Daily_Workout_Widget extends WP_Widget {
     // Sanitize widget form values as they are saved
     public function update($new_instance, $old_instance) {
         $instance = array();
-        $instance['title'] = (!empty($new_instance['title'])) ? strip_tags($new_instance['title']) : '';
+        $instance['title'] = (!empty($new_instance['title'])) ? wp_strip_all_tags($new_instance['title']) : '';
 
         return $instance;
     }

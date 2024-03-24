@@ -11,7 +11,7 @@ exclude_files=(docker-compose.yml ".*" "release.sh")
 
 # Remove existing files
 rm -rf dist
-rm -rf zip_file
+rm -rf daily-workout.zip
 
 # Create the destination directory
 mkdir -p "$destination_dir"
